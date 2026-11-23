@@ -1,0 +1,22 @@
+CREATE TRIGGER trg_users_before_insert
+BEFORE INSERT ON users
+FOR EACH ROW
+BEGIN
+    SET NEW.name  = TRIM(NEW.name);
+    SET NEW.email = LOWER(TRIM(NEW.email));
+
+    IF NEW.name = '' THEN
+        SET NEW.name = 'Без имени';
+    END IF;
+END//
+
+CREATE TRIGGER trg_users_after_insert
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_log (action, table_name, row_id, info)
+    VALUES ('INSERT', 'users', NEW.id,
+            CONCAT('Добавлен пользователь: ', NEW.name, ' <', NEW.email, '>'));
+END//
+
+DELIMITER ;
